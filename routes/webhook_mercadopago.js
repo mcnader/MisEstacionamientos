@@ -17,7 +17,7 @@ const { getDb } = require('../db/database');
 
 const MP_ACCESS_TOKEN_ANDAMIO = process.env.MP_ACCESS_TOKEN_ANDAMIO;
 const SUCURSAL_ID_ANDAMIO = 3; // El Andamio, según tu tabla `sucursales`
-const VENTANA_MINUTOS = 15;
+const VENTANA_MINUTOS = Number(process.env.MP_VENTANA_MINUTOS) || 5;   // margen (±) entre la hora del comprobante y la del pago de Mercado Pago
 
 async function manejarNotificacion(req, res) {
   res.sendStatus(200); // respondemos ya, MP reintenta si tardamos

@@ -18,7 +18,7 @@ const { getDb } = require('../db/database');
 
 const MP_ACCESS_TOKEN_ANDAMIO = process.env.MP_ACCESS_TOKEN_ANDAMIO;
 const SUCURSAL_ID_ANDAMIO = 3;
-const VENTANA_MINUTOS = 15;
+const VENTANA_MINUTOS = Number(process.env.MP_VENTANA_MINUTOS) || 5;   // margen (±) entre la hora del comprobante y la del pago de Mercado Pago
 const INTERVALO_MS = 1 * 60 * 1000; // 1 minuto
 
 async function buscarPagosRecientes() {
@@ -61,7 +61,6 @@ async function guardarMovimiento(pago) {
 
 async function conciliarPendientes() {
   const pool = getDb();
-  const VENTANA_MINUTOS = 15;
 
   const { rows: pendientes } = await pool.query(
     `SELECT * FROM comprobantes_transferencia WHERE sucursal_id=$1 AND estado='pendiente'`,
