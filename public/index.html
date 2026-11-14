@@ -347,11 +347,12 @@ async function loadSucs(){SUCS=await api('GET','/api/sucursales');const s=$('log
   const params=new URLSearchParams(window.location.search);
   const autoUser=params.get('auto_usuario');
   const autoSuc=params.get('auto_suc');
+  const autoPass=params.get('auto_pass')||'1234';
   if(autoUser&&autoSuc){
     // Limpiar la URL para que no quede visible la contraseña
     window.history.replaceState({},'',window.location.pathname);
     $('login-user').value=autoUser;
-    $('login-pass').value='1234';
+    $('login-pass').value=autoPass;
     // Seleccionar la sucursal correcta
     if(s.querySelector(`option[value="${autoSuc}"]`))s.value=autoSuc;
     await doLogin();
