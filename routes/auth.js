@@ -15,7 +15,6 @@ router.post('/login',async(req,res)=>{
       );
       const user=rows[0];
       if(!user)return res.status(401).json({error:'Usuario o contraseña incorrectos'});
-      // Verificar con bcrypt o comparación directa si aún no tiene hash correcto
       const ok=user.password.startsWith('$2')
         ?bcrypt.compareSync(password,user.password)
         :password===user.password;
@@ -24,16 +23,17 @@ router.post('/login',async(req,res)=>{
       return res.json({ok:true,user:req.session.user});
     }
 
-    // Login normal — requiere sucursal_id
+    // Login normal — busca por usuario solamente, cualquier sucursal
     if(!sucursal_id)return res.status(400).json({error:'Datos incompletos'});
     const {rows}=await getDb().query(
-      'SELECT * FROM usuarios WHERE usuario=$1 AND sucursal_id=$2 AND activo=1',
-      [usuario,sucursal_id]
+      'SELECT * FROM usuarios WHERE usuario=$1 AND activo=1',
+      [usuario]
     );
     const user=rows[0];
     if(!user||!bcrypt.compareSync(password,user.password))
       return res.status(401).json({error:'Usuario o contraseña incorrectos'});
-    req.session.user={id:user.id,nombre:user.nombre,rol:user.rol,turno:user.turno,sucursal_id:user.sucursal_id};
+    // Usar sucursal_id del formulario, no del registro en DB
+    req.session.user={id:user.id,nombre:user.nombre,rol:user.rol,turno:user.turno,sucursal_id:parseInt(sucursal_id)};
     res.json({ok:true,user:req.session.user});
   }catch(e){res.status(500).json({error:e.message});}
 });
@@ -45,7 +45,6 @@ router.post('/login-sucursal',async(req,res)=>{
       return res.status(403).json({error:'Solo admin global'});
     const {sucursal_id}=req.body;
     if(!sucursal_id)return res.status(400).json({error:'Sucursal requerida'});
-    // Buscar el usuario admin de esa sucursal
     const {rows}=await getDb().query(
       "SELECT * FROM usuarios WHERE sucursal_id=$1 AND rol='admin' AND activo=1 ORDER BY id LIMIT 1",
       [sucursal_id]
